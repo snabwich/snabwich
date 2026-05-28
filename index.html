@@ -1,0 +1,645 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNABWICH – Crafted Crunch, Anytime!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+            min-height: 100vh;
+        }
+        
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            pointer-events: auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+        
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            letter-spacing: -2px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tagline {
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+        
+        .highlight-box {
+            display: inline-block;
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #FFA500;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            margin: 0.5rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+        
+        .menu-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255, 165, 0, 0.2);
+            border-color: #FFA500;
+        }
+        
+        .menu-card h2 {
+            color: #FFD700;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 0.5rem;
+        }
+        
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        .item-price {
+            color: #FFA500;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+        }
+        
+        .btn {
+            display: inline-block;
+            margin: 1rem;
+            padding: 1rem 2rem;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: #FFD700;
+            color: #000;
+        }
+        
+        .hours {
+            margin: 2rem 0;
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+        }
+        
+        .floating-badge {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #FFA500;
+            color: #000;
+            padding: 1rem;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.9rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 165, 0, 0.5);
+            animation: float 3s ease-in-out infinite;
+            z-index: 100;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    
+    <div class="ui-layer">
+        <header>
+            <h1>SNABWICH</h1>
+            <p class="tagline">Crafted Crunch, Anytime! ✨</p>
+            <div>
+                <span class="highlight-box">Minimum Order: ₹130</span>
+                <span class="highlight-box">Starts at just ₹39!</span>
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="menu-grid">
+                <div class="menu-card" onclick="animateCard(this)">
+                    <h2>🌟 Blink Bites</h2>
+                    <div class="menu-item">
+                        <span class="item-name">The Chana Drama</span>
+                        <span class="item-price">₹39</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Sweet Heat Sticks</span>
+                        <span class="item-price">₹69</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Say Cheese Toast</span>
+                        <span class="item-price">₹69</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Avo Smash Toast</span>
+                        <span class="item-price">₹99</span>
+                    </div>
+                </div>
+                
+                <div class="menu-card" onclick="animateCard(this)">
+                    <h2>🥪 Snabwich Delights</h2>
+                    <div class="menu-item">
+                        <span class="item-name">Say Cheese & Chilli</span>
+                        <span class="item-price">₹39</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Zen Garden Bite</span>
+                        <span class="item-price">₹39</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Cheesy Corn Crunch</span>
+                        <span class="item-price">₹69</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Cheesy Garden Grill</span>
+                        <span class="item-price">₹69</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Farm Fresh Bite</span>
+                        <span class="item-price">₹69</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Bombay Street Bite</span>
+                        <span class="item-price">₹99</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Royal Paneer Grill</span>
+                        <span class="item-price">₹99</span>
+                    </div>
+                </div>
+                
+                <div class="menu-card" onclick="animateCard(this)">
+                    <h2>☕ Brewed Chill</h2>
+                    <div class="menu-item">
+                        <span class="item-name">Butterscotch</span>
+                        <span class="item-price">₹99</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Hazelnut</span>
+                        <span class="item-price">₹99</span>
+                    </div>
+                    <div class="menu-item">
+                        <span class="item-name">Classic</span>
+                        <span class="item-price">₹99</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <p class="hours">🕐 Open 4 PM – 8 PM</p>
+            <a href="https://wa.me/c/919980115255" class="btn" target="_blank">Order Now on WhatsApp</a>
+            <a href="https://chat.whatsapp.com/GBxErvGNM2XIBEDo9CpBmr" class="btn btn-secondary" target="_blank">Join Group for Offers</a>
+        </div>
+    </div>
+    
+    <div class="floating-badge" onclick="window.open('https://wa.me/c/919980115255', '_blank')">
+        ORDER<br>NOW
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene Setup
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.02);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        
+        const spotLight = new THREE.SpotLight(0xffa500, 1);
+        spotLight.position.set(5, 10, 5);
+        spotLight.castShadow = true;
+        spotLight.penumbra = 0.3;
+        scene.add(spotLight);
+        
+        const pointLight = new THREE.PointLight(0xffd700, 0.8);
+        pointLight.position.set(-5, 5, 5);
+        scene.add(pointLight);
+        
+        // Materials
+        const breadMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xd4a574, 
+            roughness: 0.8,
+            metalness: 0.1
+        });
+        
+        const crustMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b4513, 
+            roughness: 0.9 
+        });
+        
+        const cheeseMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xffd700, 
+            roughness: 0.4, 
+            metalness: 0.3,
+            emissive: 0xffa500,
+            emissiveIntensity: 0.1
+        });
+        
+        const lettuceMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x7cfc00, 
+            roughness: 0.8,
+            side: THREE.DoubleSide
+        });
+        
+        const tomatoMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xff6347, 
+            roughness: 0.2, 
+            metalness: 0.1 
+        });
+        
+        // Create Sandwich Group
+        const sandwichGroup = new THREE.Group();
+        scene.add(sandwichGroup);
+        
+        // Bottom Bread
+        const bottomBreadGeo = new THREE.BoxGeometry(2, 0.3, 2);
+        const bottomBread = new THREE.Mesh(bottomBreadGeo, breadMaterial);
+        bottomBread.position.y = -0.5;
+        bottomBread.castShadow = true;
+        bottomBread.receiveShadow = true;
+        sandwichGroup.add(bottomBread);
+        
+        // Lettuce (wavy layers)
+        for(let i = 0; i < 3; i++) {
+            const lettuceGeo = new THREE.PlaneGeometry(2.2, 2.2, 4, 4);
+            const lettuce = new THREE.Mesh(lettuceGeo, lettuceMaterial);
+            lettuce.rotation.x = -Math.PI / 2;
+            lettuce.position.y = -0.3 + (i * 0.02);
+            
+            // Add wave to vertices
+            const positions = lettuce.geometry.attributes.position;
+            for(let j = 0; j < positions.count; j++) {
+                positions.setZ(j, Math.sin(positions.getX(j) * 3) * 0.05 + Math.cos(positions.getY(j) * 3) * 0.05);
+            }
+            lettuce.geometry.computeVertexNormals();
+            sandwichGroup.add(lettuce);
+        }
+        
+        // Tomato slices
+        for(let i = 0; i < 3; i++) {
+            const tomatoGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16);
+            const tomato = new THREE.Mesh(tomatoGeo, tomatoMaterial);
+            tomato.position.set(
+                Math.cos(i * 2.1) * 0.6, 
+                -0.2, 
+                Math.sin(i * 2.1) * 0.6
+            );
+            tomato.castShadow = true;
+            sandwichGroup.add(tomato);
+        }
+        
+        // Cheese
+        const cheeseGeo = new THREE.BoxGeometry(2, 0.05, 2);
+        const cheese = new THREE.Mesh(cheeseGeo, cheeseMaterial);
+        cheese.position.y = -0.1;
+        cheese.castShadow = true;
+        sandwichGroup.add(cheese);
+        
+        // Melted cheese drips
+        for(let i = 0; i < 5; i++) {
+            const dripGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const drip = new THREE.Mesh(dripGeo, cheeseMaterial);
+            drip.position.set(
+                (Math.random() - 0.5) * 1.8,
+                -0.15,
+                (Math.random() - 0.5) * 1.8
+            );
+            drip.scale.y = 1.5;
+            sandwichGroup.add(drip);
+        }
+        
+        // Patty
+        const pattyGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.2, 32);
+        const pattyMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b4513, 
+            roughness: 0.9 
+        });
+        const patty = new THREE.Mesh(pattyGeo, pattyMaterial);
+        patty.position.y = 0.1;
+        patty.castShadow = true;
+        sandwichGroup.add(patty);
+        
+        // Top Bread
+        const topBreadGeo = new THREE.BoxGeometry(2, 0.4, 2);
+        const topBread = new THREE.Mesh(topBreadGeo, breadMaterial);
+        topBread.position.y = 0.4;
+        topBread.castShadow = true;
+        topBread.receiveShadow = true;
+        sandwichGroup.add(topBread);
+        
+        // Sesame seeds on top
+        for(let i = 0; i < 30; i++) {
+            const seedGeo = new THREE.ConeGeometry(0.02, 0.05, 4);
+            const seed = new THREE.Mesh(seedGeo, new THREE.MeshStandardMaterial({ color: 0xf5deb3 }));
+            seed.position.set(
+                (Math.random() - 0.5) * 1.6,
+                0.6,
+                (Math.random() - 0.5) * 1.6
+            );
+            seed.rotation.x = Math.random() * Math.PI;
+            seed.rotation.z = Math.random() * Math.PI;
+            sandwichGroup.add(seed);
+        }
+        
+        // Floating Ingredients (Particles)
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 100;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 20;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0xffa500,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        // Floating geometric shapes representing menu items
+        const shapes = [];
+        const shapeGeometries = [
+            new THREE.IcosahedronGeometry(0.3, 0),
+            new THREE.OctahedronGeometry(0.3, 0),
+            new THREE.TetrahedronGeometry(0.4, 0)
+        ];
+        
+        for(let i = 0; i < 15; i++) {
+            const geo = shapeGeometries[Math.floor(Math.random() * shapeGeometries.length)];
+            const mat = new THREE.MeshStandardMaterial({
+                color: Math.random() > 0.5 ? 0xffd700 : 0xffa500,
+                metalness: 0.6,
+                roughness: 0.2,
+                transparent: true,
+                opacity: 0.6
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            
+            mesh.position.set(
+                (Math.random() - 0.5) * 15,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 5 - 3
+            );
+            
+            mesh.userData = {
+                speedX: (Math.random() - 0.5) * 0.01,
+                speedY: (Math.random() - 0.5) * 0.01,
+                speedZ: (Math.random() - 0.5) * 0.01,
+                rotSpeed: (Math.random() - 0.5) * 0.02
+            };
+            
+            shapes.push(mesh);
+            scene.add(mesh);
+        }
+        
+        // Mouse interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+        
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+        
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX) / 200;
+            mouseY = (event.clientY - windowHalfY) / 200;
+        });
+        
+        // Touch interaction for mobile
+        document.addEventListener('touchmove', (event) => {
+            mouseX = (event.touches[0].clientX - windowHalfX) / 200;
+            mouseY = (event.touches[0].clientY - windowHalfY) / 200;
+        });
+        
+        // Animation loop
+        const clock = new THREE.Clock();
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const elapsedTime = clock.getElapsedTime();
+            
+            // Rotate sandwich
+            sandwichGroup.rotation.y += 0.005;
+            sandwichGroup.rotation.x = Math.sin(elapsedTime * 0.5) * 0.1;
+            sandwichGroup.position.y = Math.sin(elapsedTime) * 0.2;
+            
+            // Float shapes
+            shapes.forEach((shape, index) => {
+                shape.position.x += shape.userData.speedX;
+                shape.position.y += shape.userData.speedY + Math.sin(elapsedTime + index) * 0.002;
+                shape.position.z += shape.userData.speedZ;
+                
+                shape.rotation.x += shape.userData.rotSpeed;
+                shape.rotation.y += shape.userData.rotSpeed;
+                
+                // Boundary check
+                if(Math.abs(shape.position.x) > 8) shape.userData.speedX *= -1;
+                if(Math.abs(shape.position.y) > 5) shape.userData.speedY *= -1;
+                if(shape.position.z > 2 || shape.position.z < -8) shape.userData.speedZ *= -1;
+            });
+            
+            // Animate particles
+            particlesMesh.rotation.y = elapsedTime * 0.05;
+            particlesMesh.position.y = Math.sin(elapsedTime * 0.2) * 0.5;
+            
+            // Smooth camera movement
+            targetX = mouseX * 0.5;
+            targetY = mouseY * 0.5;
+            
+            camera.position.x += (targetX - camera.position.x) * 0.05;
+            camera.position.y += (-targetY - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+            
+            // Light animation
+            spotLight.position.x = Math.sin(elapsedTime * 0.5) * 5;
+            spotLight.position.z = Math.cos(elapsedTime * 0.5) * 5;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Card animation function
+        function animateCard(card) {
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                card.style.transform = '';
+            }, 100);
+        }
+        
+        // Click on 3D objects
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        document.addEventListener('click', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(sandwichGroup.children);
+            
+            if(intersects.length > 0) {
+                // Spin sandwich on click
+                const spinDuration = 1000;
+                const startRotation = sandwichGroup.rotation.y;
+                const startTime = Date.now();
+                
+                function spin() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / spinDuration, 1);
+                    const ease = 1 - Math.pow(1 - progress, 3);
+                    
+                    sandwichGroup.rotation.y = startRotation + (ease * Math.PI * 4);
+                    sandwichGroup.scale.setScalar(1 + Math.sin(progress * Math.PI) * 0.2);
+                    
+                    if(progress < 1) {
+                        requestAnimationFrame(spin);
+                    } else {
+                        sandwichGroup.scale.setScalar(1);
+                    }
+                }
+                spin();
+            }
+        });
+    </script>
+</body>
+</html>
